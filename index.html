@@ -6,7 +6,6 @@
 
   <title>TDS-TOOL</title>
 
-  <!-- Telegram Mini App -->
   <script src="https://telegram.org/js/telegram-web-app.js"></script>
 
   <style>
@@ -24,70 +23,140 @@
     }
 
     header {
-      padding: 22px;
+      padding: 20px;
       border-bottom: 1px solid #00cfff;
       color: #00d9ff;
-      font-size: 25px;
+      font-size: 24px;
       font-weight: bold;
     }
 
     .status {
       float: right;
-      font-size: 13px;
+      font-size: 12px;
       color: #aaa;
-      padding: 8px 12px;
+      padding: 8px 11px;
       border: 1px solid #008aad;
       border-radius: 20px;
     }
 
     main {
-      padding: 25px;
+      padding: 22px;
       padding-bottom: 100px;
+    }
+
+    .screen {
+      display: none;
+    }
+
+    .screen.active {
+      display: block;
     }
 
     .welcome {
       text-align: center;
-      padding: 30px 15px;
+      padding: 28px 15px;
       border: 1px solid #008aad;
       border-radius: 20px;
-      margin-bottom: 25px;
+      margin-bottom: 22px;
       background: #0a1220;
     }
 
     .welcome h1 {
       color: #00d9ff;
-      font-size: 30px;
-      margin-bottom: 12px;
+      font-size: 29px;
+      margin-bottom: 10px;
     }
 
     .welcome p {
       color: #aaa;
-      font-size: 17px;
+      font-size: 16px;
     }
 
     .button {
       width: 100%;
-      padding: 25px;
-      margin: 12px 0;
+      padding: 22px;
+      margin: 10px 0;
       border: 2px solid #00d9ff;
-      border-radius: 20px;
+      border-radius: 18px;
       background: #0b1a2b;
       color: white;
-      font-size: 19px;
+      font-size: 18px;
       font-weight: bold;
       cursor: pointer;
-      transition: 0.15s;
     }
 
     .button:active {
-      transform: scale(0.97);
+      transform: scale(.97);
       background: #10263c;
     }
 
     .icon {
       display: block;
-      font-size: 35px;
-      margin-bottom: 10px;
+      font-size: 34px;
+      margin-bottom: 8px;
+    }
+
+    .back {
+      background: transparent;
+      border: none;
+      color: #00d9ff;
+      font-size: 17px;
+      margin-bottom: 20px;
+      cursor: pointer;
+    }
+
+    .panel {
+      background: #0a1220;
+      border: 1px solid #008aad;
+      border-radius: 20px;
+      padding: 20px;
+    }
+
+    .panel h2 {
+      color: #00d9ff;
+      margin-bottom: 20px;
+    }
+
+    label {
+      display: block;
+      color: #aaa;
+      margin: 14px 0 7px;
+      font-size: 14px;
+    }
+
+    select,
+    input {
+      width: 100%;
+      padding: 15px;
+      border-radius: 12px;
+      border: 1px solid #008aad;
+      background: #07101c;
+      color: white;
+      font-size: 16px;
+      outline: none;
+    }
+
+    select:focus,
+    input:focus {
+      border-color: #00d9ff;
+    }
+
+    .result {
+      margin-top: 18px;
+      padding: 16px;
+      border-radius: 12px;
+      background: #07101c;
+      border: 1px solid #34495e;
+      color: #aaa;
+      text-align: center;
+    }
+
+    .note {
+      margin-top: 15px;
+      color: #777;
+      font-size: 12px;
+      line-height: 1.5;
+      text-align: center;
     }
 
     nav {
@@ -95,7 +164,7 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: 75px;
+      height: 72px;
       background: #0b1424;
       border-top: 1px solid #008aad;
       display: flex;
@@ -107,7 +176,8 @@
       background: none;
       border: none;
       color: #aaa;
-      font-size: 15px;
+      font-size: 14px;
+      cursor: pointer;
     }
 
     nav button.active {
@@ -118,51 +188,485 @@
 
 <body>
 
-  <header>
-    ⚡ TDS-TOOL
-    <span class="status">🔴 Non connesso</span>
-  </header>
+<header>
+  ⚡ TDS-TOOL
+  <span class="status" id="status">🔴 Non connesso</span>
+</header>
 
-  <main>
+<main>
 
-    <section class="welcome">
+  <!-- HOME -->
+  <section id="home" class="screen active">
+
+    <div class="welcome">
       <h1>Benvenuto</h1>
       <p>Seleziona un'azione per iniziare</p>
-    </section>
+    </div>
 
-    <button class="button" id="whatsapp">
+    <button class="button" onclick="openScreen('whatsapp')">
       <span class="icon">🔗</span>
       Connetti WhatsApp
     </button>
 
-    <button class="button" id="nuke">
+    <button class="button" onclick="openScreen('nuke')">
       <span class="icon">💣</span>
       Nuke
     </button>
 
-    <button class="button" id="checkban">
+    <button class="button" onclick="openScreen('checkban')">
       <span class="icon">🔎</span>
       Check Ban
     </button>
 
-  </main>
+  </section>
 
-  <nav>
-    <button class="active">🏠<br>Home</button>
-    <button>↩️<br>Indietro</button>
-    <button>🌐<br>IT</button>
-  </nav>
 
-  <script>
-    const tg = window.Telegram.WebApp;
+  <!-- WHATSAPP -->
+  <section id="whatsapp" class="screen">
 
-    tg.ready();
-    tg.expand();
+    <button class="back" onclick="openScreen('home')">
+      ← Torna indietro
+    </button>
 
-    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
-      document.querySelector(".status").textContent = "🟢 Connesso";
+    <div class="panel">
+      <h2>🔗 Connetti WhatsApp</h2>
+
+      <label for="waNumber">
+        Numero di telefono
+      </label>
+
+      <input
+        id="waNumber"
+        type="tel"
+        placeholder="+39 3331234567"
+      >
+
+      <button class="button" onclick="connectWhatsApp()">
+        Genera codice
+      </button>
+
+      <div id="waResult" class="result">
+        ⚪ Nessun account collegato
+      </div>
+    </div>
+
+  </section>
+
+
+  <!-- NUKE -->
+  <section id="nuke" class="screen">
+
+    <button class="back" onclick="openScreen('home')">
+      ← Torna indietro
+    </button>
+
+    <div class="panel">
+      <h2>💣 Amministrazione</h2>
+
+      <div class="result">
+        ⚠️ Funzione disponibile solamente per amministratori autorizzati.
+      </div>
+
+      <button class="button" onclick="adminAction()">
+        Apri pannello
+      </button>
+
+      <p class="note">
+        Le operazioni distruttive non vengono eseguite automaticamente.
+      </p>
+    </div>
+
+  </section>
+
+
+  <!-- CHECK BAN -->
+  <section id="checkban" class="screen">
+
+    <button class="back" onclick="openScreen('home')">
+      ← Torna indietro
+    </button>
+
+    <div class="panel">
+
+      <h2>🔎 Check Ban</h2>
+
+      <label for="countrySearch">
+        Cerca Paese
+      </label>
+
+      <input
+        id="countrySearch"
+        type="text"
+        placeholder="Es. Italia, Francia..."
+        oninput="filterCountries()"
+      >
+
+      <label for="country">
+        Prefisso internazionale
+      </label>
+
+      <select id="country">
+      </select>
+
+      <label for="phone">
+        Numero di telefono
+      </label>
+
+      <input
+        id="phone"
+        type="tel"
+        inputmode="numeric"
+        placeholder="3331234567"
+      >
+
+      <button class="button" onclick="checkBan()">
+        🔎 CONTROLLA
+      </button>
+
+      <div id="banResult" class="result">
+        ⚪ In attesa di verifica
+      </div>
+
+      <p class="note">
+        Il risultato reale verrà collegato al backend quando sarà
+        disponibile un metodo di verifica autorizzato.
+      </p>
+
+    </div>
+
+  </section>
+
+</main>
+
+
+<nav>
+  <button id="navHome" class="active" onclick="openScreen('home')">
+    🏠<br>Home
+  </button>
+
+  <button onclick="goBack()">
+    ↩️<br>Indietro
+  </button>
+
+  <button onclick="setLanguage()">
+    🌐<br>IT
+  </button>
+</nav>
+
+
+<script>
+
+  /* =========================
+     TELEGRAM MINI APP
+  ========================= */
+
+  const tg = window.Telegram.WebApp;
+
+  tg.ready();
+  tg.expand();
+
+
+  if (
+    tg.initDataUnsafe &&
+    tg.initDataUnsafe.user
+  ) {
+    document.getElementById("status").textContent =
+      "🟢 Connesso";
+  }
+
+
+  /* =========================
+     PAESI E PREFISSI
+  ========================= */
+
+  const countries = [
+
+    ["Afghanistan", "+93", "🇦🇫"],
+    ["Albania", "+355", "🇦🇱"],
+    ["Algeria", "+213", "🇩🇿"],
+    ["Andorra", "+376", "🇦🇩"],
+    ["Angola", "+244", "🇦🇴"],
+    ["Argentina", "+54", "🇦🇷"],
+    ["Armenia", "+374", "🇦🇲"],
+    ["Australia", "+61", "🇦🇺"],
+    ["Austria", "+43", "🇦🇹"],
+    ["Azerbaigian", "+994", "🇦🇿"],
+
+    ["Belgio", "+32", "🇧🇪"],
+    ["Bolivia", "+591", "🇧🇴"],
+    ["Bosnia ed Erzegovina", "+387", "🇧🇦"],
+    ["Brasile", "+55", "🇧🇷"],
+    ["Bulgaria", "+359", "🇧🇬"],
+
+    ["Canada", "+1", "🇨🇦"],
+    ["Cile", "+56", "🇨🇱"],
+    ["Cina", "+86", "🇨🇳"],
+    ["Colombia", "+57", "🇨🇴"],
+    ["Corea del Sud", "+82", "🇰🇷"],
+    ["Croazia", "+385", "🇭🇷"],
+    ["Cipro", "+357", "🇨🇾"],
+
+    ["Danimarca", "+45", "🇩🇰"],
+    ["Ecuador", "+593", "🇪🇨"],
+    ["Egitto", "+20", "🇪🇬"],
+    ["Emirati Arabi Uniti", "+971", "🇦🇪"],
+    ["Estonia", "+372", "🇪🇪"],
+
+    ["Filippine", "+63", "🇵🇭"],
+    ["Finlandia", "+358", "🇫🇮"],
+    ["Francia", "+33", "🇫🇷"],
+
+    ["Georgia", "+995", "🇬🇪"],
+    ["Germania", "+49", "🇩🇪"],
+    ["Giappone", "+81", "🇯🇵"],
+    ["Grecia", "+30", "🇬🇷"],
+
+    ["India", "+91", "🇮🇳"],
+    ["Indonesia", "+62", "🇮🇩"],
+    ["Irlanda", "+353", "🇮🇪"],
+    ["Islanda", "+354", "🇮🇸"],
+    ["Israele", "+972", "🇮🇱"],
+    ["Italia", "+39", "🇮🇹"],
+
+    ["Kenya", "+254", "🇰🇪"],
+
+    ["Lettonia", "+371", "🇱🇻"],
+    ["Libano", "+961", "🇱🇧"],
+    ["Lituania", "+370", "🇱🇹"],
+    ["Lussemburgo", "+352", "🇱🇺"],
+
+    ["Malesia", "+60", "🇲🇾"],
+    ["Malta", "+356", "🇲🇹"],
+    ["Marocco", "+212", "🇲🇦"],
+    ["Messico", "+52", "🇲🇽"],
+    ["Moldavia", "+373", "🇲🇩"],
+    ["Monaco", "+377", "🇲🇨"],
+    ["Montenegro", "+382", "🇲🇪"],
+
+    ["Norvegia", "+47", "🇳🇴"],
+    ["Nuova Zelanda", "+64", "🇳🇿"],
+
+    ["Paesi Bassi", "+31", "🇳🇱"],
+    ["Pakistan", "+92", "🇵🇰"],
+    ["Panama", "+507", "🇵🇦"],
+    ["Perù", "+51", "🇵🇪"],
+    ["Polonia", "+48", "🇵🇱"],
+    ["Portogallo", "+351", "🇵🇹"],
+
+    ["Qatar", "+974", "🇶🇦"],
+
+    ["Regno Unito", "+44", "🇬🇧"],
+    ["Repubblica Ceca", "+420", "🇨🇿"],
+    ["Romania", "+40", "🇷🇴"],
+    ["Russia", "+7", "🇷🇺"],
+
+    ["San Marino", "+378", "🇸🇲"],
+    ["Serbia", "+381", "🇷🇸"],
+    ["Singapore", "+65", "🇸🇬"],
+    ["Slovacchia", "+421", "🇸🇰"],
+    ["Slovenia", "+386", "🇸🇮"],
+    ["Spagna", "+34", "🇪🇸"],
+    ["Stati Uniti", "+1", "🇺🇸"],
+    ["Sudafrica", "+27", "🇿🇦"],
+    ["Svezia", "+46", "🇸🇪"],
+    ["Svizzera", "+41", "🇨🇭"],
+
+    ["Thailandia", "+66", "🇹🇭"],
+    ["Tunisia", "+216", "🇹🇳"],
+    ["Turchia", "+90", "🇹🇷"],
+
+    ["Ucraina", "+380", "🇺🇦"],
+    ["Ungheria", "+36", "🇭🇺"],
+
+    ["Venezuela", "+58", "🇻🇪"],
+    ["Vietnam", "+84", "🇻🇳"]
+  ];
+
+
+  const countrySelect =
+    document.getElementById("country");
+
+
+  function populateCountries(list) {
+
+    countrySelect.innerHTML = "";
+
+    list.forEach(country => {
+
+      const option =
+        document.createElement("option");
+
+      option.value = country[1];
+
+      option.textContent =
+        `${country[2]} ${country[0]} (${country[1]})`;
+
+      countrySelect.appendChild(option);
+
+    });
+
+  }
+
+
+  populateCountries(countries);
+
+
+  /* =========================
+     RICERCA PAESI
+  ========================= */
+
+  function filterCountries() {
+
+    const search =
+      document
+        .getElementById("countrySearch")
+        .value
+        .toLowerCase();
+
+    const filtered =
+      countries.filter(country =>
+        country[0]
+          .toLowerCase()
+          .includes(search) ||
+        country[1].includes(search)
+      );
+
+    populateCountries(filtered);
+  }
+
+
+  /* =========================
+     NAVIGAZIONE
+  ========================= */
+
+  let currentScreen = "home";
+
+
+  function openScreen(screen) {
+
+    document
+      .querySelectorAll(".screen")
+      .forEach(element =>
+        element.classList.remove("active")
+      );
+
+    const selected =
+      document.getElementById(screen);
+
+    if (selected) {
+      selected.classList.add("active");
+      currentScreen = screen;
     }
-  </script>
+
+    document
+      .getElementById("navHome")
+      .classList.toggle(
+        "active",
+        screen === "home"
+      );
+  }
+
+
+  function goBack() {
+
+    if (currentScreen !== "home") {
+      openScreen("home");
+    }
+
+  }
+
+
+  function setLanguage() {
+
+    tg.showAlert(
+      "🇮🇹 Lingua attuale: Italiano"
+    );
+
+  }
+
+
+  /* =========================
+     WHATSAPP
+  ========================= */
+
+  function connectWhatsApp() {
+
+    const number =
+      document
+        .getElementById("waNumber")
+        .value
+        .trim();
+
+    const result =
+      document.getElementById("waResult");
+
+    if (!number) {
+
+      result.textContent =
+        "⚠️ Inserisci un numero.";
+
+      return;
+    }
+
+    result.textContent =
+      "⚪ Collegamento non ancora configurato.";
+
+  }
+
+
+  /* =========================
+     ADMIN
+  ========================= */
+
+  function adminAction() {
+
+    tg.showAlert(
+      "🔐 Il pannello richiede l'autorizzazione dell'amministratore."
+    );
+
+  }
+
+
+  /* =========================
+     CHECK BAN
+  ========================= */
+
+  function checkBan() {
+
+    const prefix =
+      document.getElementById("country").value;
+
+    const number =
+      document
+        .getElementById("phone")
+        .value
+        .replace(/\D/g, "");
+
+    const result =
+      document.getElementById("banResult");
+
+    if (!number) {
+
+      result.textContent =
+        "⚠️ Inserisci un numero.";
+
+      return;
+    }
+
+    const fullNumber =
+      prefix + number;
+
+    result.textContent =
+      "⏳ Verifica non ancora collegata al backend.";
+
+    console.log(
+      "Numero richiesto:",
+      fullNumber
+    );
+
+  }
+
+</script>
 
 </body>
 </html>
