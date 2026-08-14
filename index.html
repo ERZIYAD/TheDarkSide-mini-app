@@ -90,12 +90,6 @@
       background: #10263c;
     }
 
-    .icon {
-      display: block;
-      font-size: 34px;
-      margin-bottom: 8px;
-    }
-
     .back {
       background: transparent;
       border: none;
@@ -149,6 +143,7 @@
       border: 1px solid #34495e;
       color: #aaa;
       text-align: center;
+      word-break: break-word;
     }
 
     .note {
@@ -210,7 +205,7 @@
 
     <button class="button" onclick="openScreen('nuke')">
       <span class="icon">💣</span>
-      Nuke
+      Nuke / Migrazione
     </button>
 
     <button class="button" onclick="openScreen('checkban')">
@@ -232,17 +227,17 @@
       <h2>🔗 Connetti WhatsApp</h2>
 
       <label for="waNumber">
-        Numero di telefono
+        Numero di telefono (senza +)
       </label>
 
       <input
         id="waNumber"
         type="tel"
-        placeholder="+39 3331234567"
+        placeholder="393331234567"
       >
 
       <button class="button" onclick="connectWhatsApp()">
-        Genera codice
+        Genera codice d'associazione
       </button>
 
       <div id="waResult" class="result">
@@ -253,7 +248,7 @@
   </section>
 
 
-  <!-- NUKE -->
+  <!-- NUKE / MIGRAZIONE -->
   <section id="nuke" class="screen">
 
     <button class="back" onclick="openScreen('home')">
@@ -261,18 +256,33 @@
     </button>
 
     <div class="panel">
-      <h2>💣 Amministrazione</h2>
+      <h2>💣 Migrazione e Chiusura Gruppo</h2>
 
-      <div class="result">
-        ⚠️ Funzione disponibile solamente per amministratori autorizzati.
-      </div>
+      <label for="groupSelect">Seleziona Gruppo WhatsApp</label>
+      <select id="groupSelect">
+        <option value="">-- Connetti prima WhatsApp o aggiorna --</option>
+      </select>
+      <button class="button" style="padding:10px; font-size:14px; margin-top:5px;" onclick="loadGroups()">🔄 Aggiorna lista gruppi</button>
 
-      <button class="button" onclick="adminAction()">
-        Apri pannello
+      <label for="newGroupName">Nuovo Nome (verrà aggiunto il prefisso "✧ᵗᵈˢ ")</label>
+      <input type="text" id="newGroupName" placeholder="Es. GRUPPO CHIUSO">
+
+      <label for="newGroupLink">Link del Nuovo Gruppo</label>
+      <input type="url" id="newGroupLink" placeholder="https://chat.whatsapp.com/...">
+
+      <label for="mainMsg">Messaggio Obbligatorio di Avviso</label>
+      <input type="text" id="mainMsg" value="⚠️ Questo gruppo è in fase di migrazione. Unisciti al nuovo link!">
+
+      <button class="button" style="border-color: #ff4757; color: #ff4757; margin-top: 20px;" onclick="startMigration()">
+        🚨 AVVIA MIGRAZIONE & NUKE
       </button>
 
+      <div id="nukeResult" class="result">
+        ⚪ In attesa di operazione
+      </div>
+
       <p class="note">
-        Le operazioni distruttive non vengono eseguite automaticamente.
+        L'operazione rinominerà il gruppo aggiungendo "✧ᵗᵈˢ", invierà il messaggio col link e rimuoverà gradualmente tutti i membri.
       </p>
     </div>
 
@@ -288,7 +298,7 @@
 
     <div class="panel">
 
-      <h2>🔎 Check Ban</h2>
+      <h2>🔎 Check Ban WhatsApp</h2>
 
       <label for="countrySearch">
         Cerca Paese
@@ -320,17 +330,12 @@
       >
 
       <button class="button" onclick="checkBan()">
-        🔎 CONTROLLA
+        🔎 CONTROLLA STATO BAN
       </button>
 
       <div id="banResult" class="result">
         ⚪ In attesa di verifica
       </div>
-
-      <p class="note">
-        Il risultato reale verrà collegato al backend quando sarà
-        disponibile un metodo di verifica autorizzato.
-      </p>
 
     </div>
 
@@ -357,6 +362,13 @@
 <script>
 
   /* =========================
+     CONFIGURAZIONE BACKEND
+  ========================= */
+  // Sostituisci questo URL con quello fornito da Render/Koyeb quando pubblichi il backend
+  const BACKEND_URL = "https://il-tuo-backend.onrender.com";
+
+
+  /* =========================
      TELEGRAM MINI APP
   ========================= */
 
@@ -365,13 +377,12 @@
   tg.ready();
   tg.expand();
 
-
   if (
     tg.initDataUnsafe &&
     tg.initDataUnsafe.user
   ) {
     document.getElementById("status").textContent =
-      "🟢 Connesso";
+      "🟢 Connesso (" + tg.initDataUnsafe.user.first_name + ")";
   }
 
 
@@ -380,157 +391,55 @@
   ========================= */
 
   const countries = [
-
-    ["Afghanistan", "+93", "🇦🇫"],
-    ["Albania", "+355", "🇦🇱"],
-    ["Algeria", "+213", "🇩🇿"],
-    ["Andorra", "+376", "🇦🇩"],
-    ["Angola", "+244", "🇦🇴"],
-    ["Argentina", "+54", "🇦🇷"],
-    ["Armenia", "+374", "🇦🇲"],
-    ["Australia", "+61", "🇦🇺"],
-    ["Austria", "+43", "🇦🇹"],
-    ["Azerbaigian", "+994", "🇦🇿"],
-
-    ["Belgio", "+32", "🇧🇪"],
-    ["Bolivia", "+591", "🇧🇴"],
-    ["Bosnia ed Erzegovina", "+387", "🇧🇦"],
-    ["Brasile", "+55", "🇧🇷"],
-    ["Bulgaria", "+359", "🇧🇬"],
-
-    ["Canada", "+1", "🇨🇦"],
-    ["Cile", "+56", "🇨🇱"],
-    ["Cina", "+86", "🇨🇳"],
-    ["Colombia", "+57", "🇨🇴"],
-    ["Corea del Sud", "+82", "🇰🇷"],
-    ["Croazia", "+385", "🇭🇷"],
-    ["Cipro", "+357", "🇨🇾"],
-
-    ["Danimarca", "+45", "🇩🇰"],
-    ["Ecuador", "+593", "🇪🇨"],
-    ["Egitto", "+20", "🇪🇬"],
-    ["Emirati Arabi Uniti", "+971", "🇦🇪"],
-    ["Estonia", "+372", "🇪🇪"],
-
-    ["Filippine", "+63", "🇵🇭"],
-    ["Finlandia", "+358", "🇫🇮"],
-    ["Francia", "+33", "🇫🇷"],
-
-    ["Georgia", "+995", "🇬🇪"],
-    ["Germania", "+49", "🇩🇪"],
-    ["Giappone", "+81", "🇯🇵"],
-    ["Grecia", "+30", "🇬🇷"],
-
-    ["India", "+91", "🇮🇳"],
-    ["Indonesia", "+62", "🇮🇩"],
-    ["Irlanda", "+353", "🇮🇪"],
-    ["Islanda", "+354", "🇮🇸"],
-    ["Israele", "+972", "🇮🇱"],
-    ["Italia", "+39", "🇮🇹"],
-
-    ["Kenya", "+254", "🇰🇪"],
-
-    ["Lettonia", "+371", "🇱🇻"],
-    ["Libano", "+961", "🇱🇧"],
-    ["Lituania", "+370", "🇱🇹"],
-    ["Lussemburgo", "+352", "🇱🇺"],
-
-    ["Malesia", "+60", "🇲🇾"],
-    ["Malta", "+356", "🇲🇹"],
-    ["Marocco", "+212", "🇲🇦"],
-    ["Messico", "+52", "🇲🇽"],
-    ["Moldavia", "+373", "🇲🇩"],
-    ["Monaco", "+377", "🇲🇨"],
-    ["Montenegro", "+382", "🇲🇪"],
-
-    ["Norvegia", "+47", "🇳🇴"],
-    ["Nuova Zelanda", "+64", "🇳🇿"],
-
-    ["Paesi Bassi", "+31", "🇳🇱"],
-    ["Pakistan", "+92", "🇵🇰"],
-    ["Panama", "+507", "🇵🇦"],
-    ["Perù", "+51", "🇵🇪"],
-    ["Polonia", "+48", "🇵🇱"],
-    ["Portogallo", "+351", "🇵🇹"],
-
-    ["Qatar", "+974", "🇶🇦"],
-
-    ["Regno Unito", "+44", "🇬🇧"],
-    ["Repubblica Ceca", "+420", "🇨🇿"],
-    ["Romania", "+40", "🇷🇴"],
-    ["Russia", "+7", "🇷🇺"],
-
-    ["San Marino", "+378", "🇸🇲"],
-    ["Serbia", "+381", "🇷🇸"],
-    ["Singapore", "+65", "🇸🇬"],
-    ["Slovacchia", "+421", "🇸🇰"],
-    ["Slovenia", "+386", "🇸🇮"],
-    ["Spagna", "+34", "🇪🇸"],
-    ["Stati Uniti", "+1", "🇺🇸"],
-    ["Sudafrica", "+27", "🇿🇦"],
-    ["Svezia", "+46", "🇸🇪"],
-    ["Svizzera", "+41", "🇨🇭"],
-
-    ["Thailandia", "+66", "🇹🇭"],
-    ["Tunisia", "+216", "🇹🇳"],
-    ["Turchia", "+90", "🇹🇷"],
-
-    ["Ucraina", "+380", "🇺🇦"],
-    ["Ungheria", "+36", "🇭🇺"],
-
-    ["Venezuela", "+58", "🇻🇪"],
+    ["Afghanistan", "+93", "🇦🇫"], ["Albania", "+355", "🇦🇱"], ["Algeria", "+213", "🇩🇿"],
+    ["Andorra", "+376", "🇦🇩"], ["Angola", "+244", "🇦🇴"], ["Argentina", "+54", "🇦🇷"],
+    ["Armenia", "+374", "🇦🇲"], ["Australia", "+61", "🇦🇺"], ["Austria", "+43", "🇦🇹"],
+    ["Azerbaigian", "+994", "🇦🇿"], ["Belgio", "+32", "🇧🇪"], ["Bolivia", "+591", "🇧🇴"],
+    ["Bosnia ed Erzegovina", "+387", "🇧🇦"], ["Brasile", "+55", "🇧🇷"], ["Bulgaria", "+359", "🇧🇬"],
+    ["Canada", "+1", "🇨🇦"], ["Cile", "+56", "🇨🇱"], ["Cina", "+86", "🇨🇳"],
+    ["Colombia", "+57", "🇨🇴"], ["Corea del Sud", "+82", "🇰🇷"], ["Croazia", "+385", "🇭🇷"],
+    ["Cipro", "+357", "🇨🇾"], ["Danimarca", "+45", "🇩🇰"], ["Ecuador", "+593", "🇪🇨"],
+    ["Egitto", "+20", "🇪🇬"], ["Emirati Arabi Uniti", "+971", "🇦🇪"], ["Estonia", "+372", "🇪🇪"],
+    ["Filippine", "+63", "🇵🇭"], ["Finlandia", "+358", "🇫🇮"], ["Francia", "+33", "🇫🇷"],
+    ["Georgia", "+995", "🇬🇪"], ["Germania", "+49", "🇩🇪"], ["Giappone", "+81", "🇯🇵"],
+    ["Grecia", "+30", "🇬🇷"], ["India", "+91", "🇮🇳"], ["Indonesia", "+62", "🇮🇩"],
+    ["Irlanda", "+353", "🇮🇪"], ["Islanda", "+354", "🇮🇸"], ["Israele", "+972", "🇮🇱"],
+    ["Italia", "+39", "🇮🇹"], ["Kenya", "+254", "🇰🇪"], ["Lettonia", "+371", "🇱🇻"],
+    ["Libano", "+961", "🇱🇧"], ["Lituania", "+370", "🇱🇹"], ["Lussemburgo", "+352", "🇱🇺"],
+    ["Malesia", "+60", "🇲🇾"], ["Malta", "+356", "🇲🇹"], ["Marocco", "+212", "🇲🇦"],
+    ["Messico", "+52", "🇲🇽"], ["Moldavia", "+373", "🇲🇩"], ["Monaco", "+377", "🇲🇨"],
+    ["Montenegro", "+382", "🇲🇪"], ["Norvegia", "+47", "🇳🇴"], ["Nuova Zelanda", "+64", "🇳🇿"],
+    ["Paesi Bassi", "+31", "🇳🇱"], ["Pakistan", "+92", "🇵🇰"], ["Panama", "+507", "🇵🇦"],
+    ["Perù", "+51", "🇵🇪"], ["Polonia", "+48", "🇵🇱"], ["Portogallo", "+351", "🇵🇹"],
+    ["Qatar", "+974", "🇶🇦"], ["Regno Unito", "+44", "🇬🇧"], ["Repubblica Ceca", "+420", "🇨🇿"],
+    ["Romania", "+40", "🇷🇴"], ["Russia", "+7", "🇷🇺"], ["San Marino", "+378", "🇸🇲"],
+    ["Serbia", "+381", "🇷🇸"], ["Singapore", "+65", "🇸🇬"], ["Slovacchia", "+421", "🇸🇰"],
+    ["Slovenia", "+386", "🇸🇮"], ["Spagna", "+34", "🇪🇸"], ["Stati Uniti", "+1", "🇺🇸"],
+    ["Sudafrica", "+27", "🇿🇦"], ["Svezia", "+46", "🇸🇪"], ["Svizzera", "+41", "🇨🇭"],
+    ["Thailandia", "+66", "🇹🇭"], ["Tunisia", "+216", "🇹🇳"], ["Turchia", "+90", "🇹🇷"],
+    ["Ucraina", "+380", "🇺🇦"], ["Ungheria", "+36", "🇭🇺"], ["Venezuela", "+58", "🇻🇪"],
     ["Vietnam", "+84", "🇻🇳"]
   ];
 
-
-  const countrySelect =
-    document.getElementById("country");
-
+  const countrySelect = document.getElementById("country");
 
   function populateCountries(list) {
-
     countrySelect.innerHTML = "";
-
     list.forEach(country => {
-
-      const option =
-        document.createElement("option");
-
+      const option = document.createElement("option");
       option.value = country[1];
-
-      option.textContent =
-        `${country[2]} ${country[0]} (${country[1]})`;
-
+      option.textContent = `${country[2]} ${country[0]} (${country[1]})`;
       countrySelect.appendChild(option);
-
     });
-
   }
-
 
   populateCountries(countries);
 
-
-  /* =========================
-     RICERCA PAESI
-  ========================= */
-
   function filterCountries() {
-
-    const search =
-      document
-        .getElementById("countrySearch")
-        .value
-        .toLowerCase();
-
-    const filtered =
-      countries.filter(country =>
-        country[0]
-          .toLowerCase()
-          .includes(search) ||
-        country[1].includes(search)
-      );
-
+    const search = document.getElementById("countrySearch").value.toLowerCase();
+    const filtered = countries.filter(country =>
+      country[0].toLowerCase().includes(search) || country[1].includes(search)
+    );
     populateCountries(filtered);
   }
 
@@ -541,89 +450,143 @@
 
   let currentScreen = "home";
 
-
   function openScreen(screen) {
-
-    document
-      .querySelectorAll(".screen")
-      .forEach(element =>
-        element.classList.remove("active")
-      );
-
-    const selected =
-      document.getElementById(screen);
+    document.querySelectorAll(".screen").forEach(element => element.classList.remove("active"));
+    const selected = document.getElementById(screen);
 
     if (selected) {
       selected.classList.add("active");
       currentScreen = screen;
     }
 
-    document
-      .getElementById("navHome")
-      .classList.toggle(
-        "active",
-        screen === "home"
-      );
+    document.getElementById("navHome").classList.toggle("active", screen === "home");
   }
 
-
   function goBack() {
-
     if (currentScreen !== "home") {
       openScreen("home");
     }
-
   }
 
-
   function setLanguage() {
-
-    tg.showAlert(
-      "🇮🇹 Lingua attuale: Italiano"
-    );
-
+    tg.showAlert("🇮🇹 Lingua attuale: Italiano");
   }
 
 
   /* =========================
-     WHATSAPP
+     WHATSAPP CONNECT
   ========================= */
 
-  function connectWhatsApp() {
-
-    const number =
-      document
-        .getElementById("waNumber")
-        .value
-        .trim();
-
-    const result =
-      document.getElementById("waResult");
+  async function connectWhatsApp() {
+    const number = document.getElementById("waNumber").value.replace(/\D/g, "");
+    const result = document.getElementById("waResult");
 
     if (!number) {
-
-      result.textContent =
-        "⚠️ Inserisci un numero.";
-
+      result.textContent = "⚠️ Inserisci un numero valido.";
       return;
     }
 
-    result.textContent =
-      "⚪ Collegamento non ancora configurato.";
+    result.textContent = "⏳ Richiesta del codice in corso...";
 
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/wa/pair`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: number })
+      });
+
+      const data = await response.json();
+
+      if (data.code) {
+        result.innerHTML = `🔑 Codice: <b style="color:#00d9ff; font-size:22px;">${data.code}</b><br><small>Vai su WhatsApp > Dispositivi Collegati > Collega con numero di telefono e inserisci questo codice.</small>`;
+        loadGroups();
+      } else {
+        result.textContent = "❌ " + (data.error || "Impossibile generare il codice.");
+      }
+    } catch (err) {
+      result.textContent = "❌ Errore di connessione al backend server.";
+    }
   }
 
 
   /* =========================
-     ADMIN
+     CARICAMENTO GRUPPI
   ========================= */
 
-  function adminAction() {
+  async function loadGroups() {
+    const select = document.getElementById("groupSelect");
+    select.innerHTML = "<option>⏳ Caricamento gruppi...</option>";
 
-    tg.showAlert(
-      "🔐 Il pannello richiede l'autorizzazione dell'amministratore."
-    );
+    try {
+      const res = await fetch(`${BACKEND_URL}/api/wa/groups`);
+      const groups = await res.json();
+      select.innerHTML = "";
 
+      if (groups.length === 0) {
+        select.innerHTML = "<option>Nessun gruppo trovato</option>";
+        return;
+      }
+
+      groups.forEach(g => {
+        const opt = document.createElement("option");
+        opt.value = g.id;
+        opt.textContent = g.subject;
+        select.appendChild(opt);
+      });
+    } catch (e) {
+      select.innerHTML = "<option>❌ Errore caricamento gruppi</option>";
+    }
+  }
+
+
+  /* =========================
+     MIGRAZIONE & NUKE
+  ========================= */
+
+  async function startMigration() {
+    const groupId = document.getElementById("groupSelect").value;
+    const rawName = document.getElementById("newGroupName").value.trim();
+    const link = document.getElementById("newGroupLink").value.trim();
+    const message = document.getElementById("mainMsg").value.trim();
+    const result = document.getElementById("nukeResult");
+
+    if (!groupId) {
+      tg.showAlert("Seleziona prima un gruppo da migrare!");
+      return;
+    }
+
+    // Applicazione del prefisso obbligatorio
+    const finalName = `✧ᵗᵈˢ ${rawName || 'CHIUSO'}`;
+
+    tg.showConfirm(`Sei sicuro di voler avviare la migrazione?\n\nNuovo Nome: ${finalName}`, async (confirmed) => {
+      if (!confirmed) return;
+
+      result.textContent = "⏳ Esecuzione migrazione e rimozione membri in corso...";
+
+      try {
+        const response = await fetch(`${BACKEND_URL}/api/wa/nuke`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            groupId: groupId,
+            newName: finalName,
+            groupLink: link,
+            message: message,
+            initData: tg.initData
+          })
+        });
+
+        const data = await response.json();
+
+        if (data.success) {
+          result.innerHTML = `✅ <b>Operazione completata!</b><br>Membri rimossi: ${data.removedCount}`;
+        } else {
+          result.textContent = "❌ Errore: " + data.error;
+        }
+      } catch (err) {
+        result.textContent = "❌ Errore di comunicazione durante l'operazione.";
+      }
+    });
   }
 
 
@@ -631,39 +594,38 @@
      CHECK BAN
   ========================= */
 
-  function checkBan() {
-
-    const prefix =
-      document.getElementById("country").value;
-
-    const number =
-      document
-        .getElementById("phone")
-        .value
-        .replace(/\D/g, "");
-
-    const result =
-      document.getElementById("banResult");
+  async function checkBan() {
+    const prefix = document.getElementById("country").value;
+    const number = document.getElementById("phone").value.replace(/\D/g, "");
+    const result = document.getElementById("banResult");
 
     if (!number) {
-
-      result.textContent =
-        "⚠️ Inserisci un numero.";
-
+      result.textContent = "⚠️ Inserisci un numero di telefono.";
       return;
     }
 
-    const fullNumber =
-      prefix + number;
+    const fullNumber = (prefix + number).replace("+", "");
+    result.textContent = "⏳ Controllo stato ban su WhatsApp in corso...";
 
-    result.textContent =
-      "⏳ Verifica non ancora collegata al backend.";
+    try {
+      const response = await fetch(`${BACKEND_URL}/api/wa/checkban`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ phoneNumber: fullNumber })
+      });
 
-    console.log(
-      "Numero richiesto:",
-      fullNumber
-    );
+      const data = await response.json();
 
+      if (data.exists === false) {
+        result.innerHTML = `<b style="color:#ff4757;">🔴 NUMERO BANNATO O NON REGISTRATO</b><br>(${fullNumber})`;
+      } else if (data.exists === true) {
+        result.innerHTML = `<b style="color:#2ed573;">🟢 NUMERO ATTIVO (NON BANNATO)</b><br>(${fullNumber})`;
+      } else {
+        result.textContent = "❌ Errore durante il controllo: " + (data.error || "Sconosciuto");
+      }
+    } catch (err) {
+      result.textContent = "❌ Impossibile contattare il backend.";
+    }
   }
 
 </script>
