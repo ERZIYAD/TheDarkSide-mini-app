@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <title>TDS-TOOL</title>
+
+  <!-- Telegram Mini App -->
+  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+
+  <style>
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: Arial, sans-serif;
+      background: #070b16;
+      color: white;
+      min-height: 100vh;
+    }
+
+    header {
+      padding: 22px;
+      border-bottom: 1px solid #00cfff;
+      color: #00d9ff;
+      font-size: 25px;
+      font-weight: bold;
+    }
+
+    .status {
+      float: right;
+      font-size: 13px;
+      color: #aaa;
+      padding: 8px 12px;
+      border: 1px solid #008aad;
+      border-radius: 20px;
+    }
+
+    main {
+      padding: 25px;
+      padding-bottom: 100px;
+    }
+
+    .welcome {
+      text-align: center;
+      padding: 30px 15px;
+      border: 1px solid #008aad;
+      border-radius: 20px;
+      margin-bottom: 25px;
+      background: #0a1220;
+    }
+
+    .welcome h1 {
+      color: #00d9ff;
+      font-size: 30px;
+      margin-bottom: 12px;
+    }
+
+    .welcome p {
+      color: #aaa;
+      font-size: 17px;
+    }
+
+    .button {
+      width: 100%;
+      padding: 25px;
+      margin: 12px 0;
+      border: 2px solid #00d9ff;
+      border-radius: 20px;
+      background: #0b1a2b;
+      color: white;
+      font-size: 19px;
+      font-weight: bold;
+      cursor: pointer;
+      transition: 0.15s;
+    }
+
+    .button:active {
+      transform: scale(0.97);
+      background: #10263c;
+    }
+
+    .icon {
+      display: block;
+      font-size: 35px;
+      margin-bottom: 10px;
+    }
+
+    nav {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 75px;
+      background: #0b1424;
+      border-top: 1px solid #008aad;
+      display: flex;
+      justify-content: space-around;
+      align-items: center;
+    }
+
+    nav button {
+      background: none;
+      border: none;
+      color: #aaa;
+      font-size: 15px;
+    }
+
+    nav button.active {
+      color: #00d9ff;
+    }
+  </style>
+</head>
+
+<body>
+
+  <header>
+    ⚡ TDS-TOOL
+    <span class="status">🔴 Non connesso</span>
+  </header>
+
+  <main>
+
+    <section class="welcome">
+      <h1>Benvenuto</h1>
+      <p>Seleziona un'azione per iniziare</p>
+    </section>
+
+    <button class="button" id="whatsapp">
+      <span class="icon">🔗</span>
+      Connetti WhatsApp
+    </button>
+
+    <button class="button" id="nuke">
+      <span class="icon">💣</span>
+      Nuke
+    </button>
+
+    <button class="button" id="checkban">
+      <span class="icon">🔎</span>
+      Check Ban
+    </button>
+
+  </main>
+
+  <nav>
+    <button class="active">🏠<br>Home</button>
+    <button>↩️<br>Indietro</button>
+    <button>🌐<br>IT</button>
+  </nav>
+
+  <script>
+    const tg = window.Telegram.WebApp;
+
+    tg.ready();
+    tg.expand();
+
+    if (tg.initDataUnsafe && tg.initDataUnsafe.user) {
+      document.querySelector(".status").textContent = "🟢 Connesso";
+    }
+  </script>
+
+</body>
+</html>
