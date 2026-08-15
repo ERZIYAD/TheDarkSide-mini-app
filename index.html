@@ -1,633 +1,306 @@
 <!DOCTYPE html>
 <html lang="it">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>TDS-TOOL Mini App</title>
+    <!-- Telegram Web App SDK -->
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    <style>
+        :root {
+            --bg-color: #0d1117;
+            --card-bg: #161b22;
+            --accent-color: #00d2ff;
+            --text-color: #f0f6fc;
+            --text-secondary: #8b949e;
+            --danger-color: #ff4d4d;
+            --border-color: #30363d;
+        }
 
-  <title>TDS-TOOL</title>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            -webkit-tap-highlight-color: transparent;
+        }
 
-  <script src="https://telegram.org/js/telegram-web-app.js"></script>
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+            padding: 16px;
+        }
 
-  <style>
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 16px;
+            border-bottom: 1px solid var(--border-color);
+            margin-bottom: 20px;
+        }
 
-    body {
-      font-family: Arial, sans-serif;
-      background: #070b16;
-      color: white;
-      min-height: 100vh;
-    }
+        .title {
+            font-size: 20px;
+            font-weight: bold;
+            color: var(--accent-color);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    header {
-      padding: 20px;
-      border-bottom: 1px solid #00cfff;
-      color: #00d9ff;
-      font-size: 24px;
-      font-weight: bold;
-    }
+        .status-badge {
+            background-color: rgba(0, 210, 255, 0.1);
+            color: var(--accent-color);
+            padding: 4px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            border: 1px solid var(--accent-color);
+        }
 
-    .status {
-      float: right;
-      font-size: 12px;
-      color: #aaa;
-      padding: 8px 11px;
-      border: 1px solid #008aad;
-      border-radius: 20px;
-    }
+        .container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
 
-    main {
-      padding: 22px;
-      padding-bottom: 100px;
-    }
+        .card {
+            background-color: var(--card-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 16px;
+        }
 
-    .screen {
-      display: none;
-    }
+        .card-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
 
-    .screen.active {
-      display: block;
-    }
+        .input-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 12px;
+        }
 
-    .welcome {
-      text-align: center;
-      padding: 28px 15px;
-      border: 1px solid #008aad;
-      border-radius: 20px;
-      margin-bottom: 22px;
-      background: #0a1220;
-    }
+        label {
+            font-size: 13px;
+            color: var(--text-secondary);
+        }
 
-    .welcome h1 {
-      color: #00d9ff;
-      font-size: 29px;
-      margin-bottom: 10px;
-    }
+        input {
+            background-color: var(--bg-color);
+            border: 1px solid var(--border-color);
+            color: var(--text-color);
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            outline: none;
+        }
 
-    .welcome p {
-      color: #aaa;
-      font-size: 16px;
-    }
+        input:focus {
+            border-color: var(--accent-color);
+        }
 
-    .button {
-      width: 100%;
-      padding: 22px;
-      margin: 10px 0;
-      border: 2px solid #00d9ff;
-      border-radius: 18px;
-      background: #0b1a2b;
-      color: white;
-      font-size: 18px;
-      font-weight: bold;
-      cursor: pointer;
-    }
+        .btn {
+            background-color: var(--accent-color);
+            color: #000;
+            border: none;
+            padding: 12px;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            width: 100%;
+            transition: opacity 0.2s;
+        }
 
-    .button:active {
-      transform: scale(.97);
-      background: #10263c;
-    }
+        .btn:active {
+            opacity: 0.8;
+        }
 
-    .back {
-      background: transparent;
-      border: none;
-      color: #00d9ff;
-      font-size: 17px;
-      margin-bottom: 20px;
-      cursor: pointer;
-    }
+        .btn-danger {
+            background-color: var(--danger-color);
+            color: #fff;
+        }
 
-    .panel {
-      background: #0a1220;
-      border: 1px solid #008aad;
-      border-radius: 20px;
-      padding: 20px;
-    }
+        .result-box {
+            margin-top: 12px;
+            padding: 12px;
+            background-color: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            font-size: 14px;
+            word-break: break-all;
+            display: none;
+        }
 
-    .panel h2 {
-      color: #00d9ff;
-      margin-bottom: 20px;
-    }
+        .code-display {
+            font-family: monospace;
+            font-size: 24px;
+            letter-spacing: 2px;
+            text-align: center;
+            color: var(--accent-color);
+            padding: 10px;
+            background: #000;
+            border-radius: 6px;
+            margin-top: 8px;
+        }
 
-    label {
-      display: block;
-      color: #aaa;
-      margin: 14px 0 7px;
-      font-size: 14px;
-    }
+        nav {
+            display: flex;
+            justify-content: space-around;
+            background-color: var(--card-bg);
+            border-top: 1px solid var(--border-color);
+            padding: 10px 0;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+        }
 
-    select,
-    input {
-      width: 100%;
-      padding: 15px;
-      border-radius: 12px;
-      border: 1px solid #008aad;
-      background: #07101c;
-      color: white;
-      font-size: 16px;
-      outline: none;
-    }
+        .nav-item {
+            color: var(--text-secondary);
+            font-size: 12px;
+            text-decoration: none;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
 
-    select:focus,
-    input:focus {
-      border-color: #00d9ff;
-    }
-
-    .result {
-      margin-top: 18px;
-      padding: 16px;
-      border-radius: 12px;
-      background: #07101c;
-      border: 1px solid #34495e;
-      color: #aaa;
-      text-align: center;
-      word-break: break-word;
-    }
-
-    .note {
-      margin-top: 15px;
-      color: #777;
-      font-size: 12px;
-      line-height: 1.5;
-      text-align: center;
-    }
-
-    nav {
-      position: fixed;
-      bottom: 0;
-      left: 0;
-      right: 0;
-      height: 72px;
-      background: #0b1424;
-      border-top: 1px solid #008aad;
-      display: flex;
-      justify-content: space-around;
-      align-items: center;
-    }
-
-    nav button {
-      background: none;
-      border: none;
-      color: #aaa;
-      font-size: 14px;
-      cursor: pointer;
-    }
-
-    nav button.active {
-      color: #00d9ff;
-    }
-  </style>
+        .nav-item.active {
+            color: var(--accent-color);
+        }
+    </style>
 </head>
-
 <body>
 
-<header>
-  ⚡ TDS-TOOL
-  <span class="status" id="status">🔴 Non connesso</span>
-</header>
+    <header>
+        <div class="title">⚡ TDS-TOOL</div>
+        <div class="status-badge" id="statusBadge">Online</div>
+    </header>
 
-<main>
+    <div class="container">
+        <!-- SEZIONE CONNETTI WHATSAPP -->
+        <div class="card">
+            <div class="card-title">🔗 Connetti WhatsApp</div>
+            <div class="input-group">
+                <label for="phone">Numero di telefono (senza +)</label>
+                <input type="tel" id="phone" placeholder="Es. 212604394833">
+            </div>
+            <button class="btn" onclick="generatePairingCode()">Genera codice d'associazione</button>
+            
+            <div id="pairResult" class="result-box">
+                <div>Inserisci questo codice su WhatsApp:</div>
+                <div class="code-display" id="pairingCode">- - - -</div>
+            </div>
+            <div id="pairError" class="result-box" style="color: var(--danger-color);"></div>
+        </div>
 
-  <!-- HOME -->
-  <section id="home" class="screen active">
-
-    <div class="welcome">
-      <h1>Benvenuto</h1>
-      <p>Seleziona un'azione per iniziare</p>
+        <!-- SEZIONE CHECK BAN -->
+        <div class="card">
+            <div class="card-title">🔍 Verifica Ban Numero</div>
+            <div class="input-group">
+                <label for="checkPhone">Numero da verificare</label>
+                <input type="tel" id="checkPhone" placeholder="Es. 212604394833">
+            </div>
+            <button class="btn" style="background-color: #30363d; color: #fff;" onclick="checkBan()">Verifica Stato</button>
+            <div id="checkResult" class="result-box"></div>
+        </div>
     </div>
 
-    <button class="button" onclick="openScreen('whatsapp')">
-      <span class="icon">🔗</span>
-      Connetti WhatsApp
-    </button>
-
-    <button class="button" onclick="openScreen('nuke')">
-      <span class="icon">💣</span>
-      Nuke / Migrazione
-    </button>
-
-    <button class="button" onclick="openScreen('checkban')">
-      <span class="icon">🔎</span>
-      Check Ban
-    </button>
-
-  </section>
-
-
-  <!-- WHATSAPP -->
-  <section id="whatsapp" class="screen">
-
-    <button class="back" onclick="openScreen('home')">
-      ← Torna indietro
-    </button>
-
-    <div class="panel">
-      <h2>🔗 Connetti WhatsApp</h2>
-
-      <label for="waNumber">
-        Numero di telefono (senza +)
-      </label>
-
-      <input
-        id="waNumber"
-        type="tel"
-        placeholder="393331234567"
-      >
-
-      <button class="button" onclick="connectWhatsApp()">
-        Genera codice d'associazione
-      </button>
-
-      <div id="waResult" class="result">
-        ⚪ Nessun account collegato
-      </div>
-    </div>
-
-  </section>
-
-
-  <!-- NUKE / MIGRAZIONE -->
-  <section id="nuke" class="screen">
-
-    <button class="back" onclick="openScreen('home')">
-      ← Torna indietro
-    </button>
-
-    <div class="panel">
-      <h2>💣 Migrazione e Chiusura Gruppo</h2>
-
-      <label for="groupSelect">Seleziona Gruppo WhatsApp</label>
-      <select id="groupSelect">
-        <option value="">-- Connetti prima WhatsApp o aggiorna --</option>
-      </select>
-      <button class="button" style="padding:10px; font-size:14px; margin-top:5px;" onclick="loadGroups()">🔄 Aggiorna lista gruppi</button>
-
-      <label for="newGroupName">Nuovo Nome (verrà aggiunto il prefisso "✧ᵗᵈˢ ")</label>
-      <input type="text" id="newGroupName" placeholder="Es. GRUPPO CHIUSO">
-
-      <label for="newGroupLink">Link del Nuovo Gruppo</label>
-      <input type="url" id="newGroupLink" placeholder="https://chat.whatsapp.com/...">
-
-      <label for="mainMsg">Messaggio Obbligatorio di Avviso</label>
-      <input type="text" id="mainMsg" value="⚠️ Questo gruppo è in fase di migrazione. Unisciti al nuovo link!">
-
-      <button class="button" style="border-color: #ff4757; color: #ff4757; margin-top: 20px;" onclick="startMigration()">
-        🚨 AVVIA MIGRAZIONE & NUKE
-      </button>
-
-      <div id="nukeResult" class="result">
-        ⚪ In attesa di operazione
-      </div>
-
-      <p class="note">
-        L'operazione rinominerà il gruppo aggiungendo "✧ᵗᵈˢ", invierà il messaggio col link e rimuoverà gradualmente tutti i membri.
-      </p>
-    </div>
-
-  </section>
-
-
-  <!-- CHECK BAN -->
-  <section id="checkban" class="screen">
-
-    <button class="back" onclick="openScreen('home')">
-      ← Torna indietro
-    </button>
-
-    <div class="panel">
-
-      <h2>🔎 Check Ban WhatsApp</h2>
-
-      <label for="countrySearch">
-        Cerca Paese
-      </label>
-
-      <input
-        id="countrySearch"
-        type="text"
-        placeholder="Es. Italia, Francia..."
-        oninput="filterCountries()"
-      >
-
-      <label for="country">
-        Prefisso internazionale
-      </label>
-
-      <select id="country">
-      </select>
-
-      <label for="phone">
-        Numero di telefono
-      </label>
-
-      <input
-        id="phone"
-        type="tel"
-        inputmode="numeric"
-        placeholder="3331234567"
-      >
-
-      <button class="button" onclick="checkBan()">
-        🔎 CONTROLLA STATO BAN
-      </button>
-
-      <div id="banResult" class="result">
-        ⚪ In attesa di verifica
-      </div>
-
-    </div>
-
-  </section>
-
-</main>
-
-
-<nav>
-  <button id="navHome" class="active" onclick="openScreen('home')">
-    🏠<br>Home
-  </button>
-
-  <button onclick="goBack()">
-    ↩️<br>Indietro
-  </button>
-
-  <button onclick="setLanguage()">
-    🌐<br>IT
-  </button>
-</nav>
-
-
-<script>
-
-  /* =========================
-     CONFIGURAZIONE BACKEND
-  ========================= */
-  const BACKEND_URL = "https://tds-backed.vercel.app";
-
-
-  /* =========================
-     TELEGRAM MINI APP
-  ========================= */
-
-  const tg = window.Telegram.WebApp;
-
-  tg.ready();
-  tg.expand();
-
-  if (
-    tg.initDataUnsafe &&
-    tg.initDataUnsafe.user
-  ) {
-    document.getElementById("status").textContent =
-      "🟢 Connesso (" + tg.initDataUnsafe.user.first_name + ")";
-  }
-
-
-  /* =========================
-     PAESI E PREFISSI
-  ========================= */
-
-  const countries = [
-    ["Afghanistan", "+93", "🇦🇫"], ["Albania", "+355", "🇦🇱"], ["Algeria", "+213", "🇩🇿"],
-    ["Andorra", "+376", "🇦🇩"], ["Angola", "+244", "🇦🇴"], ["Argentina", "+54", "🇦🇷"],
-    ["Armenia", "+374", "🇦🇲"], ["Australia", "+61", "🇦🇺"], ["Austria", "+43", "🇦🇹"],
-    ["Azerbaigian", "+994", "🇦🇿"], ["Belgio", "+32", "🇧🇪"], ["Bolivia", "+591", "🇧🇴"],
-    ["Bosnia ed Erzegovina", "+387", "🇧🇦"], ["Brasile", "+55", "🇧🇷"], ["Bulgaria", "+359", "🇧🇬"],
-    ["Canada", "+1", "🇨🇦"], ["Cile", "+56", "🇨🇱"], ["Cina", "+86", "🇨🇳"],
-    ["Colombia", "+57", "🇨🇴"], ["Corea del Sud", "+82", "🇰🇷"], ["Croazia", "+385", "🇭🇷"],
-    ["Cipro", "+357", "🇨🇾"], ["Danimarca", "+45", "🇩🇰"], ["Ecuador", "+593", "🇪🇨"],
-    ["Egitto", "+20", "🇪🇬"], ["Emirati Arabi Uniti", "+971", "🇦🇪"], ["Estonia", "+372", "🇪🇪"],
-    ["Filippine", "+63", "🇵🇭"], ["Finlandia", "+358", "🇫🇮"], ["Francia", "+33", "🇫🇷"],
-    ["Georgia", "+995", "🇬🇪"], ["Germania", "+49", "🇩🇪"], ["Giappone", "+81", "🇯🇵"],
-    ["Grecia", "+30", "🇬🇷"], ["India", "+91", "🇮🇳"], ["Indonesia", "+62", "🇮🇩"],
-    ["Irlanda", "+353", "🇮🇪"], ["Islanda", "+354", "🇮🇸"], ["Israele", "+972", "🇮🇱"],
-    ["Italia", "+39", "🇮🇹"], ["Kenya", "+254", "🇰🇪"], ["Lettonia", "+371", "🇱🇻"],
-    ["Libano", "+961", "🇱🇧"], ["Lituania", "+370", "🇱🇹"], ["Lussemburgo", "+352", "🇱🇺"],
-    ["Malesia", "+60", "🇲🇾"], ["Malta", "+356", "🇲🇹"], ["Marocco", "+212", "🇲🇦"],
-    ["Messico", "+52", "🇲🇽"], ["Moldavia", "+373", "🇲🇩"], ["Monaco", "+377", "🇲🇨"],
-    ["Montenegro", "+382", "🇲🇪"], ["Norvegia", "+47", "🇳🇴"], ["Nuova Zelanda", "+64", "🇳🇿"],
-    ["Paesi Bassi", "+31", "🇳🇱"], ["Pakistan", "+92", "🇵🇰"], ["Panama", "+507", "🇵🇦"],
-    ["Perù", "+51", "🇵🇪"], ["Polonia", "+48", "🇵🇱"], ["Portogallo", "+351", "🇵🇹"],
-    ["Qatar", "+974", "🇶🇦"], ["Regno Unito", "+44", "🇬🇧"], ["Repubblica Ceca", "+420", "🇨🇿"],
-    ["Romania", "+40", "🇷🇴"], ["Russia", "+7", "🇷🇺"], ["San Marino", "+378", "🇸🇲"],
-    ["Serbia", "+381", "🇷🇸"], ["Singapore", "+65", "🇸🇬"], ["Slovacchia", "+421", "🇸🇰"],
-    ["Slovenia", "+386", "🇸🇮"], ["Spagna", "+34", "🇪🇸"], ["Stati Uniti", "+1", "🇺🇸"],
-    ["Sudafrica", "+27", "🇿🇦"], ["Svezia", "+46", "🇸🇪"], ["Svizzera", "+41", "🇨🇭"],
-    ["Thailandia", "+66", "🇹🇭"], ["Tunisia", "+216", "🇹🇳"], ["Turchia", "+90", "🇹🇷"],
-    ["Ucraina", "+380", "🇺🇦"], ["Ungheria", "+36", "🇭🇺"], ["Venezuela", "+58", "🇻🇪"],
-    ["Vietnam", "+84", "🇻🇳"]
-  ];
-
-  const countrySelect = document.getElementById("country");
-
-  function populateCountries(list) {
-    countrySelect.innerHTML = "";
-    list.forEach(country => {
-      const option = document.createElement("option");
-      option.value = country[1];
-      option.textContent = `${country[2]} ${country[0]} (${country[1]})`;
-      countrySelect.appendChild(option);
-    });
-  }
-
-  populateCountries(countries);
-
-  function filterCountries() {
-    const search = document.getElementById("countrySearch").value.toLowerCase();
-    const filtered = countries.filter(country =>
-      country[0].toLowerCase().includes(search) || country[1].includes(search)
-    );
-    populateCountries(filtered);
-  }
-
-
-  /* =========================
-     NAVIGAZIONE
-  ========================= */
-
-  let currentScreen = "home";
-
-  function openScreen(screen) {
-    document.querySelectorAll(".screen").forEach(element => element.classList.remove("active"));
-    const selected = document.getElementById(screen);
-
-    if (selected) {
-      selected.classList.add("active");
-      currentScreen = screen;
-    }
-
-    document.getElementById("navHome").classList.toggle("active", screen === "home");
-  }
-
-  function goBack() {
-    if (currentScreen !== "home") {
-      openScreen("home");
-    }
-  }
-
-  function setLanguage() {
-    tg.showAlert("🇮🇹 Lingua attuale: Italiano");
-  }
-
-
-  /* =========================
-     WHATSAPP CONNECT
-  ========================= */
-
-  async function connectWhatsApp() {
-    const number = document.getElementById("waNumber").value.replace(/\D/g, "");
-    const result = document.getElementById("waResult");
-
-    if (!number) {
-      result.textContent = "⚠️ Inserisci un numero valido.";
-      return;
-    }
-
-    result.textContent = "⏳ Richiesta del codice in corso...";
-
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/wa/pair`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: number })
-      });
-
-      const data = await response.json();
-
-      if (data.code) {
-        result.innerHTML = `🔑 Codice: <b style="color:#00d9ff; font-size:22px;">${data.code}</b><br><small>Vai su WhatsApp > Dispositivi Collegati > Collega con numero di telefono e inserisci questo codice.</small>`;
-        loadGroups();
-      } else {
-        result.textContent = "❌ " + (data.error || "Impossibile generare il codice.");
-      }
-    } catch (err) {
-      result.textContent = "❌ Errore di connessione al backend server.";
-    }
-  }
-
-
-  /* =========================
-     CARICAMENTO GRUPPI
-  ========================= */
-
-  async function loadGroups() {
-    const select = document.getElementById("groupSelect");
-    select.innerHTML = "<option>⏳ Caricamento gruppi...</option>";
-
-    try {
-      const res = await fetch(`${BACKEND_URL}/api/wa/groups`);
-      const groups = await res.json();
-      select.innerHTML = "";
-
-      if (groups.length === 0) {
-        select.innerHTML = "<option>Nessun gruppo trovato</option>";
-        return;
-      }
-
-      groups.forEach(g => {
-        const opt = document.createElement("option");
-        opt.value = g.id;
-        opt.textContent = g.subject;
-        select.appendChild(opt);
-      });
-    } catch (e) {
-      select.innerHTML = "<option>❌ Errore caricamento gruppi</option>";
-    }
-  }
-
-
-  /* =========================
-     MIGRAZIONE & NUKE
-  ========================= */
-
-  async function startMigration() {
-    const groupId = document.getElementById("groupSelect").value;
-    const rawName = document.getElementById("newGroupName").value.trim();
-    const link = document.getElementById("newGroupLink").value.trim();
-    const message = document.getElementById("mainMsg").value.trim();
-    const result = document.getElementById("nukeResult");
-
-    if (!groupId) {
-      tg.showAlert("Seleziona prima un gruppo da migrare!");
-      return;
-    }
-
-    // Applicazione del prefisso obbligatorio
-    const finalName = `✧ᵗᵈˢ ${rawName || 'CHIUSO'}`;
-
-    tg.showConfirm(`Sei sicuro di voler avviare la migrazione?\n\nNuovo Nome: ${finalName}`, async (confirmed) => {
-      if (!confirmed) return;
-
-      result.textContent = "⏳ Esecuzione migrazione e rimozione membri in corso...";
-
-      try {
-        const response = await fetch(`${BACKEND_URL}/api/wa/nuke`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            groupId: groupId,
-            newName: finalName,
-            groupLink: link,
-            message: message,
-            initData: tg.initData
-          })
-        });
-
-        const data = await response.json();
-
-        if (data.success) {
-          result.innerHTML = `✅ <b>Operazione completata!</b><br>Membri rimossi: ${data.removedCount}`;
-        } else {
-          result.textContent = "❌ Errore: " + data.error;
+    <script>
+        // Inizializzazione Telegram WebApp SDK
+        const tg = window.Telegram ? window.Telegram.WebApp : null;
+        if (tg) {
+            tg.expand();
+            tg.ready();
         }
-      } catch (err) {
-        result.textContent = "❌ Errore di comunicazione durante l'operazione.";
-      }
-    });
-  }
 
+        // Il tuo nuovo URL del backend su Termux via Serveo
+        const BACKEND_URL = "https://18319ff120e376f8-105-158-189-80.serveousercontent.com";
 
-  /* =========================
-     CHECK BAN
-  ========================= */
+        // Funzione per generare il codice di associazione
+        async function generatePairingCode() {
+            let phoneInput = document.getElementById('phone').value.trim();
+            const pairResult = document.getElementById('pairResult');
+            const pairError = document.getElementById('pairError');
+            const codeDisplay = document.getElementById('pairingCode');
 
-  async function checkBan() {
-    const prefix = document.getElementById("country").value;
-    const number = document.getElementById("phone").value.replace(/\D/g, "");
-    const result = document.getElementById("banResult");
+            pairResult.style.display = 'none';
+            pairError.style.display = 'none';
 
-    if (!number) {
-      result.textContent = "⚠️ Inserisci un numero di telefono.";
-      return;
-    }
+            // Pulisce il numero rimuovendo eventuali '+' o spazi
+            phoneInput = phoneInput.replace(/[^0-9]/g, '');
 
-    const fullNumber = (prefix + number).replace("+", "");
-    result.textContent = "⏳ Controllo stato ban su WhatsApp in corso...";
+            if (!phoneInput) {
+                pairError.innerText = "❌ Inserisci un numero di telefono valido.";
+                pairError.style.display = 'block';
+                return;
+            }
 
-    try {
-      const response = await fetch(`${BACKEND_URL}/api/wa/checkban`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ phoneNumber: fullNumber })
-      });
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/wa/pair`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phoneInput })
+                });
 
-      const data = await response.json();
+                const data = await response.json();
 
-      if (data.exists === false) {
-        result.innerHTML = `<b style="color:#ff4757;">🔴 NUMERO BANNATO O NON REGISTRATO</b><br>(${fullNumber})`;
-      } else if (data.exists === true) {
-        result.innerHTML = `<b style="color:#2ed573;">🟢 NUMERO ATTIVO (NON BANNATO)</b><br>(${fullNumber})`;
-      } else {
-        result.textContent = "❌ Errore durante il controllo: " + (data.error || "Sconosciuto");
-      }
-    } catch (err) {
-      result.textContent = "❌ Impossibile contattare il backend.";
-    }
-  }
+                if (data.success && data.code) {
+                    codeDisplay.innerText = data.code;
+                    pairResult.style.display = 'block';
+                } else {
+                    pairError.innerText = "❌ " + (data.error || "Errore nella generazione del codice.");
+                    pairError.style.display = 'block';
+                }
+            } catch (err) {
+                console.error(err);
+                pairError.innerText = "❌ Errore di connessione al backend server.";
+                pairError.style.display = 'block';
+            }
+        }
 
-</script>
+        // Funzione per la verifica del ban
+        async function checkBan() {
+            let phoneInput = document.getElementById('checkPhone').value.trim();
+            const checkResult = document.getElementById('checkResult');
+            
+            checkResult.style.display = 'none';
+            phoneInput = phoneInput.replace(/[^0-9]/g, '');
 
+            if (!phoneInput) {
+                alert("Inserisci un numero valido");
+                return;
+            }
+
+            try {
+                const response = await fetch(`${BACKEND_URL}/api/wa/checkban`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ phoneNumber: phoneInput })
+                });
+
+                const data = await response.json();
+                checkResult.innerText = data.exists ? "✅ Il numero è attivo su WhatsApp." : "⚠️ Il numero potrebbe essere bannato o non registrato.";
+                checkResult.style.display = 'block';
+            } catch (err) {
+                checkResult.innerText = "❌ Impossibile verificare lo stato.";
+                checkResult.style.display = 'block';
+            }
+        }
+    </script>
 </body>
 </html>
